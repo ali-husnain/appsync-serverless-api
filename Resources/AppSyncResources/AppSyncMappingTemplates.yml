@@ -1,0 +1,10 @@
+- dataSource: getCustomer # this is the datasource we will create after that in serverless-appsync-api
+  type: Query # this will the type of action 
+  field: getCustomer # this is the graphql query or mutation name
+  request: "Query.getCustomer.request.vtl"
+  response: "Query.getCustomer.response.vtl"
+- dataSource: ticketDetail # this is resolver
+  type: Query 
+  field: ticketDetail
+  request: "Query.ticketDetail.request.vtl"
+  response: "Query.ticketDetail.response.vtl"

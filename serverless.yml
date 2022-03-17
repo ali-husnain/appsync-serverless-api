@@ -1,0 +1,95 @@
+service: appsync-crud-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ${env:REGION, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  timeout: 30
+  vpc:
+    securityGroupIds:
+      - sg-0346c63b08bbbf4e9
+    subnetIds:
+      - subnet-dfb8c280
+      - subnet-10f3c01e
+      - subnet-42ebe20f
+      - subnet-83532ae5
+      - subnet-12058823
+      - subnet-e5fcb8c4
+
+  # Environment variables
+  environment:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICE_NAME: ${self:service}-${self:provider.stage}
+    NODE_ENV: ${self:custom.secrets.NODE_ENV}
+    #mysql
+    MYSQL_DB_IDENTIFIER: ${self:custom.secrets.MYSQL_DB_IDENTIFIER}
+    MYSQL_DB_NAME: ${self:custom.secrets.MYSQL_DB_NAME}
+    MYSQL_DB_USERNAME: ${self:custom.secrets.MYSQL_DB_USERNAME}
+    MYSQL_DB_PASSWORD: ${self:custom.secrets.MYSQL_DB_PASSWORD}
+    MYSQL_DB_HOST: ${self:custom.secrets.MYSQL_DB_HOST}
+    MYSQL_DB_PORT: ${self:custom.secrets.MYSQL_DB_PORT}
+
+  # IAM statements
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:GetItem
+  #       - dynamodb:UpdateItem
+  #       - dynamodb:DeleteItem
+  #       - dynamodb:PutItem
+  #     Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB}"
+
+plugins:
+  - serverless-plugin-split-stacks
+  - serverless-appsync-plugin
+  - serverless-dotenv-plugin
+
+functions:
+  getCustomer:
+    handler: getCustomer/index.handler
+    name: getCustomer-${self:provider.stage}
+    package:
+      individually: true
+      artifact: "./dist/getCustomer.zip"
+  ticketDetail:
+    handler: ticketDetail/index.handler
+    name: ticketDetail-${self:provider.stage}
+    package:
+      individually: true
+      artifact: "./dist/ticketDetail.zip"
+custom:
+  splitStacks:
+    nestedStackCount: 4
+    perFunction: false
+    perType: true
+    perGroupFunction: false
+  appSync: ${file(serverless-appsync-api.yml)}
+  #################################################################
+  ##                        Cloud Deployment Config              ##
+  #################################################################
+  ## run sls deploy --stage prod to select the config.prod.yml
+  ## run sls deploy --stage dev to select the config.dev.yml
+  secrets: ${file(./Config/config.${opt:stage,self:provider.stage, 'dev'}.yml)}
+  #################################################################
+  ##                          Local Deployment                   ##
+  #################################################################
+  # secrets: ${file(./Config/config.offline.yml)}
+
+# resources:
+#   Resources:
+#     BlogsTable:
+#       Type: 'AWS::DynamoDB::Table'
+#       Properties:
+#         AttributeDefinitions:
+#           - AttributeName: id
+#             AttributeType: S
+#         KeySchema:
+#           - AttributeName: id
+#             KeyType: HASH
+#         ProvisionedThroughput:
+#           ReadCapacityUnits: 1
+#           WriteCapacityUnits: 1
+#         TableName: ${self:provider.environment.DYNAMODB}

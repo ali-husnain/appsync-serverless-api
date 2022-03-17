@@ -1,0 +1,21 @@
+schema {
+    query: Query
+}
+
+type Query {
+    # Query for user details
+    getCustomer(cid: Int!): Customer
+    ticketDetail(id: Int): Ticket
+}
+
+type Customer {
+  cid: Int
+  first_name: String
+  Tickets: [Ticket]
+}
+
+type Ticket {
+  id: Int
+  order_id: String
+}
+

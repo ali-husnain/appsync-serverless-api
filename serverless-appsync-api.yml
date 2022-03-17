@@ -1,0 +1,21 @@
+name: appsync-crud-api
+schema: schema.api.graphql
+authenticationType: API_KEY
+apiKeys:
+  - apiKey
+mappingTemplatesLocation: mapping-templates
+mappingTemplates: ${file(./Resources/AppSyncResources/AppSyncMappingTemplates.yml)}
+
+dataSources:
+  - type: AWS_LAMBDA
+    name: getCustomer
+    description: 'Lambda'
+    config:
+      functionName: getCustomer
+      iamRoleStatements: ${file(./Resources/AppSyncResources/AppSyncRole.yml)}
+  - type: AWS_LAMBDA
+    name: ticketDetail # this is the name we use in AppSyncMappingTemplate.yml File
+    description: 'Lambda'
+    config:
+      functionName: ticketDetail # this is lambda we are mapping
+      iamRoleStatements: ${file(./Resources/AppSyncResources/AppSyncRole.yml)}    
